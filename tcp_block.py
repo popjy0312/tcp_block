@@ -26,23 +26,21 @@ def cb(pkt):
         mypkt[TCP].flags = RST | ACK
         sendp(mypkt, iface=InterFace)
 
-        if "HTTP" in pkt and pkt[TCP].Raw[:4] == 'HTTP':
+        if "HTTP" in str(pkt) and pkt[TCP].load[:4] == 'HTTP':
             print "HTTP"
             mypkt[TCP].flags = FIN | ACK
             mypkt = mypkt / "blocked"
 
         try:
-            Raw = pkt[TCP].Raw
+            payload_len = len(pkt[TCP].Raw)
         except:
-            Raw = ""
-        payload_len = len(Raw)
+            payload_len = 1
+
         if payload_len == 0:
             payload_len += 1
         mypkt[Ether].dst, mypkt[Ether].src = pkt[Ether].src, pkt[Ether].dst
         mypkt[IP].src, mypkt[IP].dst = pkt[IP].dst, pkt[IP].src
         mypkt[TCP].seq, mypkt[TCP].ack = pkt[TCP].ack, pkt[TCP].seq + payload_len
-        log.debug("backward packet seq is %d" % mypkt[TCP].seq)
-        log.debug("backward packet ack is %d" % mypkt[TCP].ack)
         sendp(mypkt, iface=InterFace)
 
 def main():
