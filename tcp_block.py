@@ -1,12 +1,9 @@
 from scapy.all import *
 import sys
-import logging as log
 
 if len(sys.argv) != 2:
     print "usage: python tcp_block.py interface"
     sys.exit(0)
-
-log.basicConfig(level = log.DEBUG)
 
 InterFace = sys.argv[1]
 
@@ -18,7 +15,6 @@ ACK = 0x10
 
 def cb(pkt):
     if Ether in pkt and IP in pkt and TCP in pkt:
-        #pkt[TCP].show()
         if pkt[TCP].flags & RST:
             return
         mypkt = pkt[Ether]/pkt[IP]/pkt[TCP]
@@ -26,15 +22,9 @@ def cb(pkt):
         del mypkt[IP].chksum
         del mypkt[TCP].chksum
 
-        log.debug("original packet seq is %d" % pkt[TCP].seq)
-        log.debug("original packet ack is %d" % pkt[TCP].ack)
         mypkt[TCP].seq += 1
-        #pkt[TCP].ack += 1
         mypkt[TCP].flags = RST | ACK
-        log.debug(" forward packet seq is %d" % mypkt[TCP].seq)
-        log.debug(" forward packet ack is %d" % mypkt[TCP].ack)
         sendp(mypkt, iface=InterFace)
-
 
         if "HTTP" in pkt and pkt[TCP].Raw[:4] == 'HTTP':
             print "HTTP"
