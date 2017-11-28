@@ -36,8 +36,6 @@ def cb(pkt):
         except:
             payload_len = 1
 
-        if payload_len == 0:
-            payload_len += 1
         mypkt[Ether].dst, mypkt[Ether].src = pkt[Ether].src, pkt[Ether].dst
         mypkt[IP].src, mypkt[IP].dst = pkt[IP].dst, pkt[IP].src
         mypkt[TCP].seq, mypkt[TCP].ack = pkt[TCP].ack, pkt[TCP].seq + payload_len
